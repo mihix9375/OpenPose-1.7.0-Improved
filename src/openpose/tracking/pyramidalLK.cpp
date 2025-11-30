@@ -8,6 +8,7 @@
     #include <immintrin.h>
 #endif
 
+#include <malloc.h>
 #include <iostream>
 #include <opencv2/core/core.hpp> // cv::Point2f, cv::Mat
 #include <opencv2/imgproc/imgproc.hpp> // cv::pyrDown
@@ -39,8 +40,8 @@ namespace op
       unsigned int niters = av.size() / 4;
       float zeros[] = {0.0, 0.0, 0.0, 0.0};
 
-      float *a = (float *) aligned_alloc(16, av.size()*sizeof(float));
-      float *b = (float *) aligned_alloc(16, av.size()*sizeof(float));
+      float *a = (float *) _aligned_malloc(16, av.size()*sizeof(float));
+      float *b = (float *) _aligned_malloc(16, av.size()*sizeof(float));
       memcpy(a,&av[0],av.size()*sizeof(float));
       memcpy(b,&bv[0],bv.size()*sizeof(float));
 
@@ -60,8 +61,8 @@ namespace op
       for (unsigned int i = 0; i < av.size() % 4; i++)
         fres[0] += (a[i+q]*b[i+q]);
 
-      free(a);
-      free(b);
+      _aligned_free(a);
+      _aligned_free(b);
 
       return fres[0];
     }
@@ -74,8 +75,8 @@ namespace op
         /* Get SIMD-vector pointers to the start of each vector */
         const size_t niters = av.size() / 8;
 
-        float *a = (float *)aligned_alloc(32, av.size() * sizeof(float));
-        float *b = (float *)aligned_alloc(32, av.size() * sizeof(float));
+        float *a = (float *)_aligned_malloc(32, av.size() * sizeof(float));
+        float *b = (float *)_aligned_malloc(32, av.size() * sizeof(float));
         memcpy(a, &av[0], av.size() * sizeof(float));
         memcpy(b, &bv[0], bv.size() * sizeof(float));
 
@@ -93,8 +94,8 @@ namespace op
         for (size_t i = 0; i < av.size() % 8; i++)
             fres[0] += (a[i + q] * b[i + q]);
 
-        free(a);
-        free(b);
+        _aligned_free(a);
+        _aligned_free(b);
 
         return fres[0] + fres[4];
     }
